@@ -2,11 +2,13 @@ import random
 from vehicle import Vehicle
 import pdb
 
+
 class Road(object):
     ego_rep = " *** "
     ego_key = -1
-    
-    def __init__(self, speed_limit, traffic_density, lane_speeds, visible_length):
+
+    def __init__(self, speed_limit, traffic_density,
+                 lane_speeds, visible_length):
         self.visible_length = visible_length
         self.num_lanes = len(lane_speeds)
         self.lane_speeds = lane_speeds
@@ -18,10 +20,10 @@ class Road(object):
         self.goal_lane = None
         self.goal_s = None
         self.timestep = 0
-                
+
     def get_ego(self):
         return self.vehicles[self.ego_key]
-        
+
     def populate_traffic(self):
         for lane_num in range(self.num_lanes):
             lane_speed = self.lane_speeds[lane_num]
@@ -32,7 +34,7 @@ class Road(object):
                     vehicle.state = "CS"
                     self.num_vehicles_added += 1
                     self.vehicles[self.num_vehicles_added] = vehicle
-                    #skip the next s distance so cars aren't added too closely
+                    # skip the next s distance so cars aren't added too closely
                     s = next(iterator)
 
     def advance(self):
@@ -69,13 +71,14 @@ class Road(object):
         ego.state = "KL"
         self.vehicles[self.ego_key] = ego
 
-
     def __repr__(self):
         s = self.vehicles.get(self.ego_key).s
         self.camera_center = max(s, self.visible_length / 2)
-        s_min = max(int(self.camera_center - self.visible_length /2), 0)
+        s_min = max(int(self.camera_center - self.visible_length / 2), 0)
         s_max = s_min + self.visible_length
-        road = [["     " if i % 3 == 0 else "     "for ln in range(self.num_lanes)] for i in range(self.visible_length)]
+        road = [["     " if i % 3 == 0 else "     "
+                 for ln in range(self.num_lanes)]
+                for i in range(self.visible_length)]
         if s_min <= self.goal_s < s_max:
             # print "goal_s is {}".format(self.goal_s)
             # pdb.set_trace()

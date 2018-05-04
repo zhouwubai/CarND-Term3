@@ -1,13 +1,13 @@
 from collections import namedtuple
-from math import sqrt, exp
+from math import exp
 
 TrajectoryData = namedtuple("TrajectoryData", [
     'intended_lane',
     'final_lane',
     'end_distance_to_goal',
-    ])
+])
 
-#weights for costs
+# weights for costs
 REACH_GOAL = 10 ** 6
 EFFICIENCY = 10 ** 5
 
@@ -16,12 +16,15 @@ DEBUG = False
 
 def goal_distance_cost(vehicle, trajectory, predictions, data):
     """
-    Cost increases based on distance of intended lane (for planning a lane change) and final lane of trajectory.
-    Cost of being out of goal lane also becomes larger as vehicle approaches goal distance.
+    Cost increases based on distance of intended lane
+    (for planning a lane change) and final lane of trajectory.
+    Cost of being out of goal lane also becomes larger as vehicle
+    approaches goal distance.
     """
     distance = abs(data.end_distance_to_goal)
     if distance:
-        cost = 1 - 2*exp(-(abs(2.0*vehicle.goal_lane - data.intended_lane - data.final_lane) / distance))
+        dd = 2.0 * vehicle.goal_lane - data.intended_lane - data.final_lane
+        cost = 1 - 2 * exp(-(abs(dd) / distance))
     else:
         cost = 1
     return cost
@@ -29,13 +32,18 @@ def goal_distance_cost(vehicle, trajectory, predictions, data):
 
 def inefficiency_cost(vehicle, trajectory, predictions, data):
     """
-    Cost becomes higher for trajectories with intended lane and final lane that have slower traffic. 
+    Cost becomes higher for trajectories with intended lane and
+    final lane that have slower traffic.
     """
 
-    proposed_speed_intended = velocity(predictions, data.intended_lane) or vehicle.target_speed
-    proposed_speed_final = velocity(predictions, data.final_lane) or vehicle.target_speed
-    
-    cost = float(2.0*vehicle.target_speed - proposed_speed_intended - proposed_speed_final)/vehicle.target_speed
+    proposed_speed_intended =\
+        velocity(predictions, data.intended_lane) or vehicle.target_speed
+    proposed_speed_final =\
+        velocity(predictions, data.final_lane) or vehicle.target_speed
+
+    dd = 2.0 * vehicle.target_speed -\
+        proposed_speed_intended - proposed_speed_final
+    cost = float(dd) / vehicle.target_speed
 
     return cost
 
@@ -45,26 +53,31 @@ def calculate_cost(vehicle, trajectory, predictions, verbose=False):
     Sum weighted cost functions to get total cost for trajectory.
     """
     trajectory_data = get_helper_data(vehicle, trajectory, predictions)
-    #print(trajectory_data)
+    # print(trajectory_data)
     cost = 0.0
     cf_list = [goal_distance_cost, inefficiency_cost]
     weight_list = [REACH_GOAL, EFFICIENCY]
 
     for weight, cf in zip(weight_list, cf_list):
-        new_cost = weight*cf(vehicle, trajectory, predictions, trajectory_data)
+        new_cost = weight * cf(vehicle, trajectory,
+                               predictions, trajectory_data)
         if DEBUG or verbose:
-            print ("{} has cost {} for lane {}".format(cf.__name__, new_cost, trajectory[-1].lane))
+            print ("{} has cost {} for lane {}".format(
+                cf.__name__, new_cost, trajectory[-1].lane))
         cost += new_cost
     return cost
+
 
 def get_helper_data(vehicle, trajectory, predictions):
     """
     Generate helper data to use in cost functions:
-    indended_lane: the current lane +/- 1 if vehicle is planning or executing a lane change.
+    indended_lane: the current lane +/- 1 if vehicle is planning or
+    executing a lane change.
     final_lane: the lane of the vehicle at the end of the trajectory.
     distance_to_goal: the distance of the vehicle to the goal.
 
-    Note that indended_lane and final_lane are both included to help differentiate between planning and executing
+    Note that indended_lane and final_lane are both included to help
+    differentiate between planning and executing
     a lane change in the cost functions.
     """
 
@@ -88,7 +101,8 @@ def get_helper_data(vehicle, trajectory, predictions):
 
 def velocity(predictions, lane):
     """
-    All non ego vehicles in a lane have the same speed, so to get the speed limit for a lane,
+    All non ego vehicles in a lane have the same speed,
+    so to get the speed limit for a lane,
     we can just find one vehicle in that lane.
     """
     for v_id, predicted_traj in predictions.items():
