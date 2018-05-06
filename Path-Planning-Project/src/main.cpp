@@ -77,10 +77,10 @@ int NextWaypoint(double x, double y, double theta, const vector<double> &maps_x,
   if(angle > pi()/4)
   {
     closestWaypoint++;
-  if (closestWaypoint == maps_x.size())
-  {
-    closestWaypoint = 0;
-  }
+    if (closestWaypoint == maps_x.size())
+    {
+        closestWaypoint = 0;
+    }
   }
 
   return closestWaypoint;
@@ -111,7 +111,7 @@ vector<double> getFrenet(double x, double y, double theta, const vector<double> 
 	double frenet_d = distance(x_x,x_y,proj_x,proj_y);
 
 	//see if d value is positive or negative by comparing it to a center point
-
+    // left is negative and right is positive for frenet d
 	double center_x = 1000-maps_x[prev_wp];
 	double center_y = 2000-maps_y[prev_wp];
 	double centerToPos = distance(center_x,center_y,x_x,x_y);
@@ -140,19 +140,19 @@ vector<double> getXY(double s, double d, const vector<double> &maps_s, const vec
 {
 	int prev_wp = -1;
 
-	while(s > maps_s[prev_wp+1] && (prev_wp < (int)(maps_s.size()-1) ))
+	while(s > maps_s[prev_wp+1] && (prev_wp < (int)(maps_s.size()-1)))
 	{
 		prev_wp++;
 	}
 
-	int wp2 = (prev_wp+1)%maps_x.size();
+	int wp2 = (prev_wp+1) % maps_x.size();
 
 	double heading = atan2((maps_y[wp2]-maps_y[prev_wp]),(maps_x[wp2]-maps_x[prev_wp]));
 	// the x,y,s along the segment
 	double seg_s = (s-maps_s[prev_wp]);
 
-	double seg_x = maps_x[prev_wp]+seg_s*cos(heading);
-	double seg_y = maps_y[prev_wp]+seg_s*sin(heading);
+	double seg_x = maps_x[prev_wp] + seg_s*cos(heading);
+	double seg_y = maps_y[prev_wp] + seg_s*sin(heading);
 
 	double perp_heading = heading-pi()/2;
 
@@ -242,11 +242,17 @@ int main() {
           	vector<double> next_x_vals;
           	vector<double> next_y_vals;
 
-
           	// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
+            double dist_inc = 0.5;
+            for(int i = 0; i < 50; i++)
+            {
+                next_x_vals.push_back(car_x+(dist_inc*i)*cos(deg2rad(car_yaw)));
+                next_y_vals.push_back(car_y+(dist_inc*i)*sin(deg2rad(car_yaw)));
+            }
+           
           	msgJson["next_x"] = next_x_vals;
           	msgJson["next_y"] = next_y_vals;
-
+            
           	auto msg = "42[\"control\","+ msgJson.dump()+"]";
 
           	//this_thread::sleep_for(chrono::milliseconds(1000));
