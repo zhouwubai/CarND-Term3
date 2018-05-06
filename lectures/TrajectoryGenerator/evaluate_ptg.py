@@ -5,6 +5,15 @@ from helpers import Vehicle, show_trajectory
 
 
 def main():
+    """
+    vehicle state: (s, s', s'', d, d, d'')
+    predictions: the non-ego vechicles
+    target: target vehicle id
+    delta: state delta we aim to follow refer to target vehicle
+    start_s: initial state s for ego car
+    start_d: initial state d for ego car
+    T: the duration of maneuver in seconds
+    """
     vehicle = Vehicle([0, 10, 0, 0, 0, 0])
     predictions = {0: vehicle}
     target = 0

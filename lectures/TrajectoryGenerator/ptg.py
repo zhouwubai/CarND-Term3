@@ -6,12 +6,12 @@ from constants import *
 # TODO - tweak weights to existing cost functions
 WEIGHTED_COST_FUNCTIONS = [
     (time_diff_cost, 1),
-    (s_diff_cost, 1),
-    (d_diff_cost, 1),
+    (s_diff_cost, 2),
+    (d_diff_cost, 4),
     (efficiency_cost, 1),
     (max_jerk_cost, 1),
     (total_jerk_cost, 1),
-    (collision_cost, 1),
+    (collision_cost, 5),
     (buffer_cost, 1),
     (max_accel_cost, 1),
     (total_accel_cost, 1),
