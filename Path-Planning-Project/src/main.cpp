@@ -3,11 +3,13 @@
 #include <uWS/uWS.h>
 #include <chrono>
 #include <iostream>
+#include <string>
 #include <thread>
 #include <vector>
-#include "Eigen-3.3/Eigen/Core"
-#include "Eigen-3.3/Eigen/QR"
+#include "Eigen/Core"
+#include "Eigen/QR"
 #include "json.hpp"
+#include "vehicle.h"
 
 using namespace std;
 
@@ -175,8 +177,6 @@ int main() {
 
   // Waypoint map to read from
   string map_file_ = "../data/highway_map.csv";
-  // The max s value before wrapping around the track back to 0
-  double max_s = 6945.554;
 
   ifstream in_map_(map_file_.c_str(), ifstream::in);
 
@@ -199,9 +199,14 @@ int main() {
   	map_waypoints_dx.push_back(d_x);
   	map_waypoints_dy.push_back(d_y);
   }
+  
+  // some states for ego vehicle
+  int ego_lane = 1;
+  string ego_state = "KL";
 
-  h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
-                     uWS::OpCode opCode) {
+  h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy,&ego_lane,&ego_state](
+    uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+    
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -219,6 +224,10 @@ int main() {
         if (event == "telemetry") {
           // j[1] is the data JSON object
           
+            // The max s value before wrapping around the track back to 0
+            // speed_limit
+            double max_s = 6945.554;
+            
         	// Main car's localization Data
           	double car_x = j[1]["x"];
           	double car_y = j[1]["y"];
@@ -231,23 +240,45 @@ int main() {
           	auto previous_path_x = j[1]["previous_path_x"];
           	auto previous_path_y = j[1]["previous_path_y"];
           	// Previous path's end s and d values 
-          	double end_path_s = j[1]["end_path_s"];
-          	double end_path_d = j[1]["end_path_d"];
+          	// double end_path_s = j[1]["end_path_s"];
+          	// double end_path_d = j[1]["end_path_d"];
 
           	// Sensor Fusion Data, a list of all other cars on the same side of the road.
+            // 2D vector [id, x, y, vx, vy, s, d]
           	auto sensor_fusion = j[1]["sensor_fusion"];
-
+           
+            cout << previous_path_x.size() << endl;
+            if (previous_path_x.size() > 0){
+               cout << car_x << "," << car_y << endl;
+               cout << previous_path_x[0] << "," << previous_path_y[0] << endl;
+            }
+            
+            map<int, Vehicle> vehicles;
+            for(json::iterator it = sensor_fusion.begin(); it != sensor_fusion.end(); ++it){
+                // initial sensor fusion vehicle state as "CS"
+                Vehicle vehicle = Vehicle(it->at(1), it->at(2), it->at(3), it->at(4), it->at(5), it->at(6), "CS");
+                vehicles[it->at(0)] = vehicle;
+            }
+            
+            
           	json msgJson;
 
           	vector<double> next_x_vals;
           	vector<double> next_y_vals;
 
           	// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
-            double dist_inc = 0.5;
-            for(int i = 0; i < 50; i++)
-            {
-                next_x_vals.push_back(car_x+(dist_inc*i)*cos(deg2rad(car_yaw)));
-                next_y_vals.push_back(car_y+(dist_inc*i)*sin(deg2rad(car_yaw)));
+           for(int i = 0; i < previous_path_x.size(); i++){
+                next_x_vals.push_back(previous_path_x[i]);
+                next_y_vals.push_back(previous_path_y[i]);
+           }
+           
+            double dist_inc = 0.3;
+            if (next_x_vals.size() < 10){
+                for(int i = 0; i < 25 - previous_path_x.size(); i++)
+                {
+                    next_x_vals.push_back(car_x+(dist_inc*i)*cos(deg2rad(car_yaw)));
+                    next_y_vals.push_back(car_y+(dist_inc*i)*sin(deg2rad(car_yaw)));
+                }
             }
            
           	msgJson["next_x"] = next_x_vals;

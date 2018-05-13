@@ -25,32 +25,32 @@ public:
         int time;  // time collision happens
     };
     
-    int L = 1;
-    
     int preferred_buffer = 6;
     
     int lane;
     
-    int s;
-    
+    float x;
+    float y;
+    float vx;
+    float vy;
     float v;
-    
     float a;
+    float s;
+    float d;
     
     float target_speed;
-    
-    int lanes_available;
-    
-    float max_acceleration;
-    
     int goal_lane;
-    
     int goal_s;
-    
     string state;
+    
+    int num_lanes;
+    float max_acceleration;
+    float max_speed;
+    float max_jerk;
     
     Vehicle();
     Vehicle(int lane, float s, float v, float a, string state="CS");
+    Vehicle(float x, float y, float vx, float vy, float s, float d, string state);
     
     virtual ~Vehicle();
     

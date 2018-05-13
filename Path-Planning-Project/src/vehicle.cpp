@@ -33,6 +33,23 @@ Vehicle::Vehicle(int lane, float s, float v, float a, string state) {
 
 }
 
+Vehicle::Vehicle(float x, float y, float vx, float vy, float s, float d, string state){
+    this->x = x;
+    this->y = y;
+    this->vx = vx;
+    this->vy = vy;
+    this->s = s;
+    this->d = d;
+    this->state = state;
+    
+    v = sqrt(vx * vx + vy * vy);
+    a = 0;
+    num_lanes = 3;
+    max_acceleration = 10.0;
+    max_speed = 22.352;  // max speed for 50 MPH
+    max_jerk = 10.0;
+}
+
 Vehicle::~Vehicle() {}
 
 
@@ -81,7 +98,7 @@ vector<string> Vehicle::successor_states() {
         states.push_back("PLCL");
         states.push_back("PLCR");
     } else if (state.compare("PLCL") == 0) {
-        if (lane != lanes_available - 1) {
+        if (lane != num_lanes - 1) {
             states.push_back("PLCL");
             states.push_back("LCL");
         }
@@ -148,8 +165,12 @@ vector<Vehicle> Vehicle::constant_speed_trajectory() {
     Generate a constant speed trajectory.
     */
     float next_pos = position_at(1);
-    vector<Vehicle> trajectory = {Vehicle(this->lane, this->s, this->v, this->a, this->state),
-                                  Vehicle(this->lane, next_pos, this->v, 0, this->state)};
+    vector<Vehicle> trajectory =
+        {Vehicle(this->x, this->y, this->vx, this->vy, this->s, this->d, this->state),
+         Vehicle(this->lane, next_pos, this->v, 0, this->state)
+         //Vehicle(this->x, this->y, this->vx, this->vy, this->s, this->d, this->state)
+        };
+    
     return trajectory;
 }
 
@@ -163,6 +184,7 @@ vector<Vehicle> Vehicle::keep_lane_trajectory(map<int, vector<Vehicle>> predicti
     float new_v = kinematics[1];
     float new_a = kinematics[2];
     trajectory.push_back(Vehicle(this->lane, new_s, new_v, new_a, "KL"));
+    // trajectory.push_back(Vehicle(this->x, this->y, this->vx, this->vy, this->s, this->d, this->state));
     return trajectory;
 }
 
@@ -305,7 +327,7 @@ void Vehicle::configure(vector<int> road_data) {
     parameters which will impact the ego vehicle.
     */
     target_speed = road_data[0];
-    lanes_available = road_data[1];
+    num_lanes = road_data[1];
     goal_s = road_data[2];
     goal_lane = road_data[3];
     max_acceleration = road_data[4];
