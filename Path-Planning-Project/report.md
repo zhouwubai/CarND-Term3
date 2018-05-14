@@ -6,6 +6,7 @@ In this project your goal is to safely navigate around a virtual highway with ot
 
 ### Obeservation
 
+* Three lane and each lane is 4 m. The frenet d starts 0 from left to right. Frenet s starts 0 to max_s
 * The simulator process each data every 0.02 s.
 * Every second 50 data points will be processed.
 * Each cycle the simulator comsumes around 3 data points, i.e., 0.06 s

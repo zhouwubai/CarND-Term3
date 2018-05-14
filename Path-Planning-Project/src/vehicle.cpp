@@ -48,6 +48,7 @@ Vehicle::Vehicle(float x, float y, float yaw, float v, float s, float d, string 
     max_acceleration = 10.0;
     max_speed = 22.352;  // max speed for 50 MPH
     max_jerk = 10.0;
+    max_s = 6945.554;
 }
 
 Vehicle::~Vehicle() {}

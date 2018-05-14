@@ -49,10 +49,11 @@ public:
     float max_acceleration;
     float max_speed;
     float max_jerk;
+    // The max s value before wrapping around the track back to 0
+    double max_s;
     
     // just const reference
     map<string, vector<double>> map_waypoints;
-    
     
     Vehicle();
     Vehicle(int lane, float s, float v, float a, string state="CS");

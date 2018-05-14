@@ -8,6 +8,11 @@
 #ifndef helper_h
 #define helper_h
 
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
 // For converting back and forth between radians and degrees.
 constexpr double pi() { return M_PI; }
 double deg2rad(double x) { return x * pi() / 180; }
