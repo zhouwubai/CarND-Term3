@@ -33,16 +33,16 @@ Vehicle::Vehicle(int lane, float s, float v, float a, string state) {
 
 }
 
-Vehicle::Vehicle(float x, float y, float vx, float vy, float s, float d, string state){
+Vehicle::Vehicle(float x, float y, float yaw, float v, float s, float d, string state, map<string, vector<double>> map_waypoints){
     this->x = x;
     this->y = y;
-    this->vx = vx;
-    this->vy = vy;
+    this->yaw = yaw;
+    this->v = v;
     this->s = s;
     this->d = d;
     this->state = state;
+    this->map_waypoints = map_waypoints;
     
-    v = sqrt(vx * vx + vy * vy);
     a = 0;
     num_lanes = 3;
     max_acceleration = 10.0;
@@ -166,7 +166,7 @@ vector<Vehicle> Vehicle::constant_speed_trajectory() {
     */
     float next_pos = position_at(1);
     vector<Vehicle> trajectory =
-        {Vehicle(this->x, this->y, this->vx, this->vy, this->s, this->d, this->state),
+        {Vehicle(this->x, this->y, this->yaw, this->v, this->s, this->d, this->state, this->map_waypoints),
          Vehicle(this->lane, next_pos, this->v, 0, this->state)
          //Vehicle(this->x, this->y, this->vx, this->vy, this->s, this->d, this->state)
         };

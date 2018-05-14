@@ -29,28 +29,34 @@ public:
     
     int lane;
     
+    //car information
     float x;
     float y;
-    float vx;
-    float vy;
+    float yaw;
     float v;
     float a;
     float s;
     float d;
     
+    // goal information
     float target_speed;
     int goal_lane;
     int goal_s;
     string state;
     
+    // road information
     int num_lanes;
     float max_acceleration;
     float max_speed;
     float max_jerk;
     
+    // just const reference
+    map<string, vector<double>> map_waypoints;
+    
+    
     Vehicle();
     Vehicle(int lane, float s, float v, float a, string state="CS");
-    Vehicle(float x, float y, float vx, float vy, float s, float d, string state);
+    Vehicle(float x, float y, float yaw, float v, float s, float d, string state, map<string, vector<double>> map_waypoints);
     
     virtual ~Vehicle();
     

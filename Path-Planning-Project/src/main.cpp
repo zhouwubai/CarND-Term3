@@ -41,6 +41,7 @@ int main() {
   vector<double> map_waypoints_s;
   vector<double> map_waypoints_dx;
   vector<double> map_waypoints_dy;
+  map<string, vector<double>> map_waypoints;
 
   // Waypoint map to read from
   string map_file_ = "../data/highway_map.csv";
@@ -67,12 +68,17 @@ int main() {
   	map_waypoints_dy.push_back(d_y);
   }
   
+  map_waypoints["x"] = map_waypoints_x;
+  map_waypoints["y"] = map_waypoints_y;
+  map_waypoints["s"] = map_waypoints_s;
+  map_waypoints["dx"] = map_waypoints_dx;
+  map_waypoints["dy"] = map_waypoints_dy;
+  
   // some states for ego vehicle
   int ego_lane = 1;
   string ego_state = "KL";
 
-  h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy,&ego_lane,&ego_state](
-    uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  h.onMessage([&map_waypoints,&ego_lane,&ego_state](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -123,7 +129,7 @@ int main() {
             map<int, Vehicle> vehicles;
             for(json::iterator it = sensor_fusion.begin(); it != sensor_fusion.end(); ++it){
                 // initial sensor fusion vehicle state as "CS"
-                Vehicle vehicle = Vehicle(it->at(1), it->at(2), it->at(3), it->at(4), it->at(5), it->at(6), "CS");
+                Vehicle vehicle = Vehicle(it->at(1), it->at(2), it->at(3), it->at(4), it->at(5), it->at(6), "CS", map_waypoints);
                 vehicles[it->at(0)] = vehicle;
             }
             
