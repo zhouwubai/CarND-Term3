@@ -147,4 +147,12 @@ vector<double> getXY(double s, double d, const vector<double> &maps_s, const vec
 
 }
 
+int getLanefromD(double d){
+    return (int) d / 4;
+}
+
+double getDFromLane(int lane){
+    return (2.0 + 4 * lane);
+}
+
 #endif /* helper_h */

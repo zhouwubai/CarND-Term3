@@ -27,37 +27,36 @@ public:
     
     int preferred_buffer = 6;
     
-    int lane;
-    
     //car information
-    float x;
-    float y;
-    float yaw;
-    float v;
-    float a;
-    float s;
-    float d;
-    
-    // goal information
-    float target_speed;
-    int goal_lane;
-    int goal_s;
+    double x;
+    double y;
+    double yaw;
+    double v;
+    double a;
+    double s;
+    double d;
     string state;
     
-    // road information
-    int num_lanes;
-    float max_acceleration;
-    float max_speed;
-    float max_jerk;
-    // The max s value before wrapping around the track back to 0
+    // constant value
+    double max_speed;
+    double max_acceleration;
+    double max_jerk;
     double max_s;
+    double goal_s;
+    double goal_lane;
     
-    // just const reference
+    // configure data
+    double target_speed;
+    int lane;
+    vector<double> previous_path_x;
+    vector<double> previous_path_y;
+    double end_path_s;
+    double end_path_d;
+    int num_lanes;
     map<string, vector<double>> map_waypoints;
     
     Vehicle();
-    Vehicle(int lane, float s, float v, float a, string state="CS");
-    Vehicle(float x, float y, float yaw, float v, float s, float d, string state, map<string, vector<double>> map_waypoints);
+    Vehicle(double x, double y, double yaw, double v, double s, double d, string state);
     
     virtual ~Vehicle();
     
@@ -67,7 +66,7 @@ public:
     
     vector<Vehicle> generate_trajectory(string state, map<int, vector<Vehicle>> predictions);
     
-    vector<float> get_kinematics(map<int, vector<Vehicle>> predictions, int lane);
+    vector<double> get_kinematics(map<int, vector<Vehicle>> predictions, int lane);
     
     vector<Vehicle> constant_speed_trajectory();
 
@@ -77,9 +76,7 @@ public:
 
     vector<Vehicle> prep_lane_change_trajectory(string state, map<int, vector<Vehicle>> predictions);
 
-    void increment(int dt);
-
-    float position_at(int t);
+    vector<double> position_at(double t);
 
     bool get_vehicle_behind(map<int, vector<Vehicle>> predictions, int lane, Vehicle & rVehicle);
 
@@ -87,9 +84,8 @@ public:
 
     vector<Vehicle> generate_predictions(int horizon=2);
 
-    void realize_next_state(vector<Vehicle> trajectory);
-
-    void configure(vector<int> road_data);
+    void configure(double target_speed, int lane, vector<double> previous_path_x,vector<double> previous_path_y,
+        double end_path_s, double end_path_d, map<string, vector<double>> map_waypoints);
 
 };
 
