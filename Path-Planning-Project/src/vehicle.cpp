@@ -22,7 +22,8 @@
  */
 
 Vehicle::Vehicle(){}
-Vehicle::Vehicle(double x, double y, double yaw, double v, double s, double d, string state){
+Vehicle::Vehicle(int lane, double x, double y, double yaw, double v, double s, double d, string state){
+    this->lane = lane;
     this->x = x;
     this->y = y;
     this->yaw = yaw;
@@ -85,6 +86,9 @@ vector<string> Vehicle::successor_states() {
     vector<string> states;
     states.push_back("KL");
     string state = this->state;
+    
+    // let's first only only try keep lane
+    /*
     if(state.compare("KL") == 0) {
         states.push_back("PLCL");
         states.push_back("PLCR");
@@ -99,6 +103,9 @@ vector<string> Vehicle::successor_states() {
             states.push_back("LCR");
         }
     }
+    */
+    
+    
     //If state is "LCL" or "LCR", then just return "KL"
     return states;
 }
@@ -161,8 +168,8 @@ vector<Vehicle> Vehicle::constant_speed_trajectory() {
     */
     vector<double> next_pos = position_at(1);
     vector<Vehicle> trajectory =
-        {Vehicle(this->x, this->y, this->yaw, this->v, this->s, this->d, this->state),
-         Vehicle(next_pos[0], next_pos[1], next_pos[2], next_pos[3], next_pos[4], next_pos[5], this->state)
+        {Vehicle(this->lane, this->x, this->y, this->yaw, this->v, this->s, this->d, this->state),
+         Vehicle(this->lane, next_pos[0], next_pos[1], next_pos[2], next_pos[3], next_pos[4], next_pos[5], this->state)
         };
     
     return trajectory;
@@ -172,9 +179,9 @@ vector<Vehicle> Vehicle::keep_lane_trajectory(map<int, vector<Vehicle>> predicti
     /*
     Generate a keep lane trajectory.
     */
-    vector<Vehicle> trajectory = {Vehicle(this->x, this->y, this->yaw, this->v, this->s, this->d, this->state)};
+    vector<Vehicle> trajectory = {Vehicle(this->lane, this->x, this->y, this->yaw, this->v, this->s, this->d, this->state)};
     vector<double> new_pos = get_kinematics(predictions, this->lane);
-    Vehicle new_vehicle = Vehicle(new_pos[0], new_pos[1], new_pos[2], new_pos[3], new_pos[4], new_pos[5], "KL");
+    Vehicle new_vehicle = Vehicle(this->lane, new_pos[0], new_pos[1], new_pos[2], new_pos[3], new_pos[4], new_pos[5], "KL");
     new_vehicle.a = new_pos[6];
     trajectory.push_back(new_vehicle);
     return trajectory;
@@ -189,7 +196,7 @@ vector<Vehicle> Vehicle::prep_lane_change_trajectory(string state, map<int, vect
     double new_a;
     Vehicle vehicle_behind;
     int new_lane = this->lane + lane_direction[state];
-    vector<Vehicle> trajectory = {Vehicle(this->x, this->y, this->yaw, this->v, this->s, this->d, this->state)};
+    vector<Vehicle> trajectory = {Vehicle(this->lane, this->x, this->y, this->yaw, this->v, this->s, this->d, this->state)};
     vector<double> curr_lane_new_kinematics = get_kinematics(predictions, this->lane);
 
     if (get_vehicle_behind(predictions, this->lane, vehicle_behind)) {
@@ -235,9 +242,9 @@ vector<Vehicle> Vehicle::lane_change_trajectory(string state, map<int, vector<Ve
             return trajectory;
         }
     }
-    trajectory.push_back(Vehicle(this->x, this->y, this->yaw, this->v, this->s, this->d, this->state));
+    trajectory.push_back(Vehicle(this->lane, this->x, this->y, this->yaw, this->v, this->s, this->d, this->state));
     vector<double> new_pos = get_kinematics(predictions, new_lane);
-    Vehicle new_vehicle = Vehicle(new_pos[0], new_pos[1], new_pos[2], new_pos[3], new_pos[4], new_pos[5], "KL");
+    Vehicle new_vehicle = Vehicle(new_lane, new_pos[0], new_pos[1], new_pos[2], new_pos[3], new_pos[4], new_pos[5], "KL");
     new_vehicle.a = new_pos[6];
     trajectory.push_back(new_vehicle);
     return trajectory;
@@ -299,7 +306,7 @@ vector<Vehicle> Vehicle::generate_predictions(int horizon) {
     for(int i = 0; i < horizon; i++) {
       // [x, y, yaw, v, s, d]
       vector<double> next_pos = position_at(i);
-      predictions.push_back(Vehicle(next_pos[0], next_pos[1], next_pos[2], next_pos[3], next_pos[4], next_pos[5], this->state));
+      predictions.push_back(Vehicle(this->lane, next_pos[0], next_pos[1], next_pos[2], next_pos[3], next_pos[4], next_pos[5], this->state));
     }
     return predictions;
 }

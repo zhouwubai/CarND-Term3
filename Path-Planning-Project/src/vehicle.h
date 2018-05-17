@@ -18,7 +18,7 @@ using namespace std;
 class Vehicle {
 
 public:
-    map<string, int> lane_direction = {{"PLCL", 1}, {"LCL", 1}, {"LCR", -1}, {"PLCR", -1}};
+    map<string, int> lane_direction = {{"PLCL", -1}, {"LCL", -1}, {"LCR", 1}, {"PLCR", 1}};
     
     struct collider{
         bool collision;  // is there a collision
@@ -35,28 +35,30 @@ public:
     double a;
     double s;
     double d;
+    int lane;
     string state;
     
     // constant value
+    int num_lanes;
     double max_speed;
     double max_acceleration;
     double max_jerk;
     double max_s;
+    
+    // set internal
     double goal_s;
     double goal_lane;
     
     // configure data
     double target_speed;
-    int lane;
     vector<double> previous_path_x;
     vector<double> previous_path_y;
     double end_path_s;
     double end_path_d;
-    int num_lanes;
     map<string, vector<double>> map_waypoints;
     
     Vehicle();
-    Vehicle(double x, double y, double yaw, double v, double s, double d, string state);
+    Vehicle(int lane, double x, double y, double yaw, double v, double s, double d, string state);
     
     virtual ~Vehicle();
     

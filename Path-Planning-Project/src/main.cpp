@@ -117,7 +117,7 @@ int main() {
           	// Sensor Fusion Data, a list of all other cars on the same side of the road.
             // 2D vector [id, x, y, vx, vy, s, d]
           	auto sensor_fusion = j[1]["sensor_fusion"];
-            
+
             map<int, Vehicle> vehicles;
             for(int i = 0; i < sensor_fusion.size(); i ++){
                 // initial sensor fusion vehicle state as "CS"
@@ -136,9 +136,19 @@ int main() {
                 vehicles[id] = vehicle;
             }
             
+            map<int, vector<Vehicle>> predictions;
+            for(map<int, Vehicle>::iterator it = vehicles.begin(); it != vehicles.end(); it ++){
+                int v_id = it->first;
+                // constant speed are used in frenet system to generate predictions
+                vector<Vehicle> preds = it->second.generate_predictions();
+                predictions[v_id] = preds;
+            }
+            
             Vehicle ego_car;
             ego_car = Vehicle(car_x, car_y, car_yaw, car_speed, car_s, car_d, ego_state);
             ego_car.configure(ref_vel, ego_lane, previous_path_x, previous_path_y, end_path_s, end_path_d, map_waypoints);
+            
+            vector<Vehicle> trajectory = ego_car.choose_next_state(predictions);
 
           	json msgJson;
 
