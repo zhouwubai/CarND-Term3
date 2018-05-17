@@ -117,46 +117,57 @@ int main() {
           	// Sensor Fusion Data, a list of all other cars on the same side of the road.
             // 2D vector [id, x, y, vx, vy, s, d]
           	auto sensor_fusion = j[1]["sensor_fusion"];
-
-            map<int, Vehicle> vehicles;
-            for(int i = 0; i < sensor_fusion.size(); i ++){
-                // initial sensor fusion vehicle state as "CS"
-                double id = sensor_fusion[i][0];
-                double x = sensor_fusion[i][1];
-                double y = sensor_fusion[i][2];
-                double vx = sensor_fusion[i][3];
-                double vy = sensor_fusion[i][4];
-                double s = sensor_fusion[i][5];
-                double d =sensor_fusion[i][6];
-
-                double yaw = atan2(vy, vx);
-                double vel = sqrt(vx * vx + vy * vy);
-
-                Vehicle vehicle = Vehicle(x, y, yaw, vel, s, d, "CS");
-                vehicles[id] = vehicle;
+           
+            json msgJson;
+            vector<double> next_x_vals;
+            vector<double> next_y_vals;
+            
+            // TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
+            for(int i = 0; i < previous_path_x.size(); i++){
+                next_x_vals.push_back(previous_path_x[i]);
+                next_y_vals.push_back(previous_path_y[i]);
             }
             
-            map<int, vector<Vehicle>> predictions;
-            for(map<int, Vehicle>::iterator it = vehicles.begin(); it != vehicles.end(); it ++){
-                int v_id = it->first;
-                // constant speed are used in frenet system to generate predictions
-                vector<Vehicle> preds = it->second.generate_predictions();
-                predictions[v_id] = preds;
+            int prev_size = previous_path_x.size();
+            
+            // we plan 50 points everytime and update when the size is less than 20
+            if(prev_size < 20){
+                map<int, Vehicle> vehicles;
+                for(int i = 0; i < sensor_fusion.size(); i ++){
+                    // initial sensor fusion vehicle state as "CS"
+                    double id = sensor_fusion[i][0];
+                    double x = sensor_fusion[i][1];
+                    double y = sensor_fusion[i][2];
+                    double vx = sensor_fusion[i][3];
+                    double vy = sensor_fusion[i][4];
+                    double s = sensor_fusion[i][5];
+                    double d =sensor_fusion[i][6];
+
+                    double yaw = atan2(vy, vx);
+                    double vel = sqrt(vx * vx + vy * vy);
+                
+                    Vehicle vehicle = Vehicle(x, y, yaw, vel, s, d, "CS");
+                    vehicles[id] = vehicle;
+                } // end_for
+            
+                map<int, vector<Vehicle>> predictions;
+                for(map<int, Vehicle>::iterator it = vehicles.begin(); it != vehicles.end(); it ++){
+                    int v_id = it->first;
+                    // constant speed are used in frenet system to generate predictions
+                    vector<Vehicle> preds = it->second.generate_predictions();
+                    predictions[v_id] = preds;
+                } // end_for
+            
+                Vehicle ego_car;
+                ego_car = Vehicle(car_x, car_y, car_yaw, car_speed, car_s, car_d, ego_state);
+                ego_car.configure(previous_path_x, previous_path_y, end_path_s, end_path_d, map_waypoints);
+            
+                vector<Vehicle> trajectory;
+                string next_state = ego_car.choose_next_state(predictions, trajectory);
+            
+                //TODO: add all to next_x_values
             }
-            
-            Vehicle ego_car;
-            ego_car = Vehicle(car_x, car_y, car_yaw, car_speed, car_s, car_d, ego_state);
-            ego_car.configure(ref_vel, ego_lane, previous_path_x, previous_path_y, end_path_s, end_path_d, map_waypoints);
-            
-            vector<Vehicle> trajectory = ego_car.choose_next_state(predictions);
-
-          	json msgJson;
-
-          	vector<double> next_x_vals;
-          	vector<double> next_y_vals;
-
-          	// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
-
+           
           	msgJson["next_x"] = next_x_vals;
           	msgJson["next_y"] = next_y_vals;
 

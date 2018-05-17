@@ -58,11 +58,11 @@ public:
     map<string, vector<double>> map_waypoints;
     
     Vehicle();
-    Vehicle(int lane, double x, double y, double yaw, double v, double s, double d, string state);
+    Vehicle(double x, double y, double yaw, double v, double s, double d, string state);
     
     virtual ~Vehicle();
     
-    vector<Vehicle> choose_next_state(map<int, vector<Vehicle>> predictions);
+    string choose_next_state(map<int, vector<Vehicle>> predictions, vector<Vehicle>& trajectory);
     
     vector<string> successor_states();
     
@@ -78,7 +78,7 @@ public:
 
     vector<Vehicle> prep_lane_change_trajectory(string state, map<int, vector<Vehicle>> predictions);
 
-    vector<double> position_at(double t);
+    Vehicle position_at(double t);
 
     bool get_vehicle_behind(map<int, vector<Vehicle>> predictions, int lane, Vehicle & rVehicle);
 
@@ -86,8 +86,8 @@ public:
 
     vector<Vehicle> generate_predictions(int horizon=2);
 
-    void configure(double target_speed, int lane, vector<double> previous_path_x,vector<double> previous_path_y,
-        double end_path_s, double end_path_d, map<string, vector<double>> map_waypoints);
+    void configure(vector<double> previous_path_x,vector<double> previous_path_y,
+            double end_path_s, double end_path_d, map<string, vector<double>> map_waypoints);
 
 };
 

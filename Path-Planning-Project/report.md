@@ -14,7 +14,35 @@ In this project your goal is to safely navigate around a virtual highway with ot
   It also means when we process, the car has already moved to further position.
 * Which coordinate system we should use in path planning and trajectory generation, considering for simulator it uses
   global (x, y) coordinate ?
-  * It is good to use frenet coordinate for path planning, since we need to know where we are going **on the road**.
+  * It is good to use frenet coordinate for path planning (setting start point and end point)
+    since we need to know where we are going **on the road**.
   * However, speed, acceleration and jerk are calculated using global coordinate.
     The discrepency between two coordinates might cause inconsistency in speed, acceleration and jerk etc.
   * Car coordinate is used for `spline`, but seems not required for JMT
+
+
+### Existing Issues for Walkthrough Planner Framework
+
+  * In walkthrough framework, every cycle only add around new 5 points to `next_x_vals` in which we assume constant reference velocity.
+    But ideally, velocity should be dynamic in the granularity of each data point. In this senario, we do not
+    have to compute new `next_x_vals` each cycle.
+  * Framework in walkthrough only has one possible when changing lane (going left). This defect will somehow
+    make existing framework works in which every cycle the path planner will add few new points into `next_x_vals`
+    from different planning trajectory. However, this will cause problem if we had multiple choices when changing
+    lane, especially in the middle of changing lane. Current framework might interrupt lane change process.
+
+
+### Solutions
+
+  * Using more elegant/flexible framework, like the one in lecture.
+  * Make sure lane change trajectory data points in one cycle will all be added to `next_x_vals`
+    thus be processed without interruption.
+  * Steps:
+    * Always start from (ref_x, ref_y), i.e., the end of `previous_path_x and previous_path_y`
+    * Choose possible next state for ego car
+    * Assume non-ego cars have constant velocity in `Frenet Coordinate` and get predictions in global coordinate
+    * For ego car, set start state (position, velocity, acceleration)
+      and end state (calculating a best goal_s to go and do some sampling around).
+    * Use JMT to generate trajectory in global coordinate
+    * Choose best trajectory with the lowest cost
+    * we can always add whole line to `next_x_vals` when `prev_size` is less than some threshold

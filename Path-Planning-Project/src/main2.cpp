@@ -150,15 +150,11 @@ int main() {
                 }
             }
 
-            double min_size = 40;
-
-            if(prev_size < min_size){
             if(too_close){
                 ref_vel -= .224;
             }
             else if(ref_vel < 49.5){
                 ref_vel += .224;
-            }
             }
 
             vector<double> ptsx;
@@ -242,7 +238,6 @@ int main() {
 
            double x_add_on = 0;
 
-           if(prev_size < min_size){
             for(int i = 0; i < 50 - previous_path_x.size(); i ++){
 
                 double N = (target_dist / (0.02 * ref_vel / 2.24));
@@ -264,7 +259,6 @@ int main() {
                 next_x_vals.push_back(x_point);
                 next_y_vals.push_back(y_point);
               }
-            }
 
             json msgJson;
           	msgJson["next_x"] = next_x_vals;
