@@ -25,6 +25,30 @@ In this project your goal is to safely navigate around a virtual highway with ot
   * `car_yaw` in degree
 
 
+### Reflect on trajectory generation
+
+Note: This version follows the framework from walkthrough, I am trying to implement the version that follow the framework from lectures, but find out so much
+details to tune and already takes lots of time. So I will submit a version met the rubic first and might walk on more advanced version later on.
+By the way, I notice sample codes for this lecture have plenty weired logic and unnecessary code.
+
+The trajectory generation framework in the project walkthrough uses either last two points in `previous_path_x` and `previous_path_y` or
+backfill one virtual data point with current car location as starting points to generate trajectory with `spline` library. In each cycle
+the speed, i.e., `ref_val` is constant and it only changes at the beginning of each planning cycle. Each cycle add around 3 new data points to
+`next_x_vals` and `next_y_vals`. The limitation for both acceleration and jerk is considered in following code
+
+```python
+  if(too_close){
+      ref_vel -= .224;
+  }
+  else if(ref_vel < 49.5){
+      ref_vel += .224;
+}
+```
+
+If we follow the framework in lecture (JMT), we need to know `start_state` and `end_state` which includes location, velocity and acceleration.
+Then cost function is utilized to select the best trajectory. The advantage of JMT is that we can add the whole planning path in one cycle to
+`next_x_vals` since we consider the speed, acceleration and jerk in JMT.
+
 ### Existing Issues for Walkthrough Planner Framework
 
   * In walkthrough framework, every cycle only add around new 5 points to `next_x_vals` in which we assume constant reference velocity.
@@ -36,7 +60,7 @@ In this project your goal is to safely navigate around a virtual highway with ot
     lane, especially in the middle of changing lane. Current framework might interrupt lane change process.
 
 
-### Solutions
+### planned Solutions (not finished yet)
 
   * Using more elegant/flexible framework, like the one in lecture.
   * Make sure lane change trajectory data points in one cycle will all be added to `next_x_vals`
