@@ -22,7 +22,7 @@
  */
 
 Vehicle::Vehicle(){}
-Vehicle::Vehicle(double x, double y, double yaw, double v, double s, double d, string state){
+Vehicle::Vehicle(double x, double y, double yaw, double v, double s, double d, string state, map<string, vector<double>> map_waypoints){
     this->x = x;
     this->y = y;
     this->yaw = yaw;
@@ -30,6 +30,7 @@ Vehicle::Vehicle(double x, double y, double yaw, double v, double s, double d, s
     this->s = s;
     this->d = d;
     this->state = state;
+    this->map_waypoints = map_waypoints;
     this->lane = getLanefromD(d);
     
     max_speed = 22.35;  // m/s
@@ -170,7 +171,7 @@ vector<Vehicle> Vehicle::constant_speed_trajectory() {
     Generate a constant speed trajectory.
     */
     Vehicle dt_vehicle = position_at(1);
-    vector<Vehicle> trajectory = {Vehicle(this->x, this->y, this->yaw, this->v, this->s, this->d, this->state), dt_vehicle};
+    vector<Vehicle> trajectory = {Vehicle(this->x, this->y, this->yaw, this->v, this->s, this->d, this->state, this->map_waypoints),dt_vehicle};
     
     return trajectory;
 }
@@ -179,9 +180,9 @@ vector<Vehicle> Vehicle::keep_lane_trajectory(map<int, vector<Vehicle>> predicti
     /*
     Generate a keep lane trajectory.
     */
-    vector<Vehicle> trajectory = {Vehicle(this->x, this->y, this->yaw, this->v, this->s, this->d, this->state)};
+    vector<Vehicle> trajectory = {Vehicle(this->x, this->y, this->yaw, this->v, this->s, this->d, this->state, this->map_waypoints)};
     vector<double> new_pos = get_kinematics(predictions, this->lane);
-    Vehicle new_vehicle = Vehicle(new_pos[0], new_pos[1], new_pos[2], new_pos[3], new_pos[4], new_pos[5], "KL");
+    Vehicle new_vehicle = Vehicle(new_pos[0], new_pos[1], new_pos[2], new_pos[3], new_pos[4], new_pos[5], "KL", this->map_waypoints);
     new_vehicle.a = new_pos[6];
     trajectory.push_back(new_vehicle);
     return trajectory;
@@ -196,7 +197,7 @@ vector<Vehicle> Vehicle::prep_lane_change_trajectory(string state, map<int, vect
     double new_a;
     Vehicle vehicle_behind;
     int new_lane = this->lane + lane_direction[state];
-    vector<Vehicle> trajectory = {Vehicle(this->x, this->y, this->yaw, this->v, this->s, this->d, this->state)};
+    vector<Vehicle> trajectory = {Vehicle(this->x, this->y, this->yaw, this->v, this->s, this->d, this->state, this->map_waypoints)};
     vector<double> curr_lane_new_kinematics = get_kinematics(predictions, this->lane);
 
     if (get_vehicle_behind(predictions, this->lane, vehicle_behind)) {
@@ -242,9 +243,9 @@ vector<Vehicle> Vehicle::lane_change_trajectory(string state, map<int, vector<Ve
             return trajectory;
         }
     }
-    trajectory.push_back(Vehicle(this->x, this->y, this->yaw, this->v, this->s, this->d, this->state));
+    trajectory.push_back(Vehicle(this->x, this->y, this->yaw, this->v, this->s, this->d, this->state, this->map_waypoints));
     vector<double> new_pos = get_kinematics(predictions, new_lane);
-    Vehicle new_vehicle = Vehicle(new_pos[0], new_pos[1], new_pos[2], new_pos[3], new_pos[4], new_pos[5], "KL");
+    Vehicle new_vehicle = Vehicle(new_pos[0], new_pos[1], new_pos[2], new_pos[3], new_pos[4], new_pos[5], "KL", this->map_waypoints);
     new_vehicle.a = new_pos[6];
     trajectory.push_back(new_vehicle);
     return trajectory;
@@ -257,7 +258,7 @@ Vehicle Vehicle::position_at(int pos) {
     double new_v = this->v + this->a*t;
     vector<double> xy = getXY(new_s, this->d, map_waypoints["s"], map_waypoints["x"], map_waypoints["y"]);
     
-    Vehicle dt_vehicle = Vehicle(xy[0], xy[1], this->yaw, new_v, new_s, this->d, this->state);
+    Vehicle dt_vehicle = Vehicle(xy[0], xy[1], this->yaw, new_v, new_s, this->d, this->state, this->map_waypoints);
     return dt_vehicle;
 }
 
@@ -327,13 +328,4 @@ vector<Vehicle> Vehicle::generate_predictions(int horizon) {
       predictions.push_back(next_vehicle);
     }
     return predictions;
-}
-
-void Vehicle::configure(vector<double> previous_path_x, vector<double> previous_path_y,
-        double end_path_s, double end_path_d, map<string, vector<double>> map_waypoints) {
-    this->previous_path_x = previous_path_x;
-    this->previous_path_y = previous_path_y;
-    this->end_path_s = end_path_s;
-    this->end_path_d = end_path_d;
-    this->map_waypoints = map_waypoints;
 }

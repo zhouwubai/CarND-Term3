@@ -52,14 +52,10 @@ public:
     
     // configure data
     double target_speed;
-    vector<double> previous_path_x;
-    vector<double> previous_path_y;
-    double end_path_s;
-    double end_path_d;
     map<string, vector<double>> map_waypoints;
     
     Vehicle();
-    Vehicle(double x, double y, double yaw, double v, double s, double d, string state);
+    Vehicle(double x, double y, double yaw, double v, double s, double d, string state, map<string, vector<double>> map_waypoints);
     
     virtual ~Vehicle();
     
@@ -86,10 +82,6 @@ public:
     bool get_vehicle_ahead(map<int, vector<Vehicle>> predictions, int lane, Vehicle & rVehicle);
 
     vector<Vehicle> generate_predictions(int horizon=2);
-
-    void configure(vector<double> previous_path_x,vector<double> previous_path_y,
-            double end_path_s, double end_path_d, map<string, vector<double>> map_waypoints);
-
 };
 
 #endif /* vehicle_h */

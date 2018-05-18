@@ -19,8 +19,11 @@ In this project your goal is to safely navigate around a virtual highway with ot
   * However, speed, acceleration and jerk are calculated using global coordinate.
     The discrepency between two coordinates might cause inconsistency in speed, acceleration and jerk etc.
   * Car coordinate is used for `spline`, but seems not required for JMT
+* `end_path_s` and `end_path_d` refer to same position as last data point of `previous_path_x` and `previous_path_y`
 * `car_yaw` in degree or radian? if `degree` why using `cos(car_yaw)` when `prev_size < 2`.
   if it is in `radian`, why `ref_yaw = degree2rad(car_yaw` at the beginning. Should be a bug in walkthrough code
+  * `car_yaw` in degree
+
 
 ### Existing Issues for Walkthrough Planner Framework
 
