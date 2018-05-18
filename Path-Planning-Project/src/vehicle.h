@@ -44,6 +44,7 @@ public:
     double max_acceleration;
     double max_jerk;
     double max_s;
+    double dt;
     
     // set internal
     double goal_s;
@@ -78,7 +79,7 @@ public:
 
     vector<Vehicle> prep_lane_change_trajectory(string state, map<int, vector<Vehicle>> predictions);
 
-    Vehicle position_at(double t);
+    Vehicle position_at(int pos);
 
     bool get_vehicle_behind(map<int, vector<Vehicle>> predictions, int lane, Vehicle & rVehicle);
 

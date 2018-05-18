@@ -38,6 +38,7 @@ Vehicle::Vehicle(double x, double y, double yaw, double v, double s, double d, s
     max_s = 6945.554;
     goal_s = 30; // planning goes to future 30 m
     goal_lane = 0;  // go left first
+    dt = 0.02;
     
     a = 0;
 }
@@ -249,16 +250,32 @@ vector<Vehicle> Vehicle::lane_change_trajectory(string state, map<int, vector<Ve
     return trajectory;
 }
 
-Vehicle Vehicle::position_at(double dt) {
-    // assume constant speed (a = 0) for other cars in frenet system
-    // return [x, y, yaw, v, s, d]
-    double new_s = this->s + this->v*dt + 0.5 * this->a*dt*dt;
-    double new_v = this->v + this->a*dt;
+Vehicle Vehicle::position_at(int pos) {
+    // assume constant acceleration for non-ego cars
+    double t = pos * dt;
+    double new_s = this->s + this->v*t + 0.5 * this->a*t*t;
+    double new_v = this->v + this->a*t;
     vector<double> xy = getXY(new_s, this->d, map_waypoints["s"], map_waypoints["x"], map_waypoints["y"]);
     
     Vehicle dt_vehicle = Vehicle(xy[0], xy[1], this->yaw, new_v, new_s, this->d, this->state);
     return dt_vehicle;
 }
+
+/*
+Vehicle Vehicle::position_at(double dt) {
+    // assume constant yaw and acceleration for non-ego cars
+    double xy_dist = this->v*dt + .5*this->a*dt*dt;
+    double new_x = this->x + xy_dist*cos(this->yaw);
+    double new_y = this->y + xy_dist*sin(this->yaw);
+ 
+    double new_v = this->v + this->a*dt;
+ 
+    vector<double> sd = getFrenet(new_x, new_y, this->yaw, map_waypoints["x"], map_waypoints["y"]);
+    Vehicle dt_vehicle = Vehicle(new_x, new_y, this->yaw, new_v, sd[0], sd[1], this->state);
+ 
+    return dt_vehicle;
+}
+*/
 
 bool Vehicle::get_vehicle_behind(map<int, vector<Vehicle>> predictions, int lane, Vehicle & rVehicle) {
     /*
@@ -304,10 +321,9 @@ vector<Vehicle> Vehicle::generate_predictions(int horizon) {
     in trajectory generation for the ego vehicle.
     */
     vector<Vehicle> predictions;
-    double dt = 0.02;
     for(int i = 0; i < horizon; i++) {
       // [x, y, yaw, v, s, d]
-      Vehicle next_vehicle = position_at(i * dt);
+      Vehicle next_vehicle = position_at(i);
       predictions.push_back(next_vehicle);
     }
     return predictions;

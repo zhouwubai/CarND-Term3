@@ -75,11 +75,9 @@ int main() {
   map_waypoints["dy"] = map_waypoints_dy;
 
   // some states for ego vehicle
-  int ego_lane = 1;
-  double ref_vel = 0.0; //mph
   string ego_state = "KL";
 
-  h.onMessage([&map_waypoints,&ego_lane,&ego_state, &ref_vel](
+  h.onMessage([&map_waypoints, &ego_state](
         uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
 
     // "42" at the start of the message means there's a websocket message event.
@@ -147,25 +145,51 @@ int main() {
                     double vel = sqrt(vx * vx + vy * vy);
                 
                     Vehicle vehicle = Vehicle(x, y, yaw, vel, s, d, "CS");
-                    vehicles[id] = vehicle;
+                    // check the end of previous_path
+                    vehicles[id] = vehicle.position_at(prev_size);
                 } // end_for
             
                 map<int, vector<Vehicle>> predictions;
                 for(map<int, Vehicle>::iterator it = vehicles.begin(); it != vehicles.end(); it ++){
                     int v_id = it->first;
                     // constant speed are used in frenet system to generate predictions
-                    vector<Vehicle> preds = it->second.generate_predictions();
+                    vector<Vehicle> preds = it->second.generate_predictions(50);
                     predictions[v_id] = preds;
                 } // end_for
-            
+                
+                // ref state when prev_size < 2, only true at the start of the program
+                double ref_x = car_x;
+                double ref_y = car_y;
+                double ref_yaw = deg2rad(car_yaw);
+                double ref_speed = 0.0;
+                
+                if(prev_size >= 2){
+                    ref_x = previous_path_x[prev_size - 1];
+                    ref_y = previous_path_y[prev_size - 1];
+                    
+                    double ref_x_prev = previous_path_x[prev_size - 2];
+                    double ref_y_prev = previous_path_y[prev_size - 2];
+                    double dx = ref_x - ref_x_prev;
+                    double dy = ref_y - ref_y_prev;
+                    
+                    ref_yaw = atan2(dy, dx);
+                    ref_speed = sqrt(dx*dx + dy*dy) / 0.02;
+                }
+                
                 Vehicle ego_car;
-                ego_car = Vehicle(car_x, car_y, car_yaw, car_speed, car_s, car_d, ego_state);
+                vector<double> sd = getFrenet(ref_x, ref_y, ref_yaw, map_waypoints["x"], map_waypoints["y"]);
+                ego_car = Vehicle(ref_x, ref_y, ref_yaw, ref_speed, sd[0], sd[1], ego_state);
                 ego_car.configure(previous_path_x, previous_path_y, end_path_s, end_path_d, map_waypoints);
             
                 vector<Vehicle> trajectory;
                 string next_state = ego_car.choose_next_state(predictions, trajectory);
-            
+                
+                ego_state = next_state;
                 //TODO: add all to next_x_values
+                for(int i = 0; i < trajectory.size(); i ++){
+                    next_x_vals.push_back(trajectory[i].x);
+                    next_y_vals.push_back(trajectory[i].y);
+                }
             }
            
           	msgJson["next_x"] = next_x_vals;
