@@ -1,0 +1,18 @@
+# install scipy
+numpy
+scipy
+matplotlib
+
+# latest ipython 6.0+ does not support python 2.7
+ipython==5.3.0
+jupyter
+
+opencv-python
+
+bleach==1.5.0
+tensorflow-gpu
+tensorflow
+
+tqdm
+fire
+pprint
