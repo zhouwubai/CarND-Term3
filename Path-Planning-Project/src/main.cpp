@@ -318,9 +318,6 @@ int main() {
                 next_y_vals.push_back(y_point);
               }
             
-            cout << "prev size " << prev_size << endl;
-            cout << "new size " << next_x_vals.size() << endl;
-            
             json msgJson;
           	msgJson["next_x"] = next_x_vals;
           	msgJson["next_y"] = next_y_vals;
