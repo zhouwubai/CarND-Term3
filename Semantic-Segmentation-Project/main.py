@@ -115,6 +115,11 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     cross_entropy_loss = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(
             logits=logits, labels=correct_label))
+
+    # regularization error
+    reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+    cross_entropy_loss = cross_entropy_loss + sum(reg_losses)
+
     train_op =\
         tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy_loss)
     return logits, train_op, cross_entropy_loss
@@ -141,7 +146,15 @@ def train_nn(sess, epochs, batch_size, get_batches_fn,
     :param learning_rate: TF Placeholder for learning rate
     """
     # TODO: Implement function
-    pass
+    for i in range(epochs):
+        for images, labels in get_batches_fn(batch_size):
+            _, loss = sess.run(
+                [train_op, cross_entropy_loss],
+                feed_dict={input_image: images,
+                           correct_label: labels,
+                           keep_prob: 0.5,
+                           learning_rate: 0.01})
+            print("loss: {}".format(loss))
 
 
 # tests.test_train_nn(train_nn)
