@@ -52,7 +52,7 @@ def load_vgg(sess, vgg_path):
     return image_input, keep_prob, layer3_out, layer4_out, layer7_out
 
 
-# tests.test_load_vgg(load_vgg, tf)
+tests.test_load_vgg(load_vgg, tf)
 
 
 def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
@@ -91,14 +91,14 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
         scaled_layer3, num_classes, 1, strides=(1, 1), padding='same',
         kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3))
     fuse_layer3 = tf.add(layer4x2, score_layer3)
-    layer3x2 = tf.layers.conv2d_transpose(
-        fuse_layer3, num_classes, 4, strides=(2, 2), padding='same',
+    layer3x8 = tf.layers.conv2d_transpose(
+        fuse_layer3, num_classes, 16, strides=(8, 8), padding='same',
         kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3))
 
-    return layer3x2
+    return layer3x8
 
 
-# tests.test_layers(layers)
+tests.test_layers(layers)
 
 
 def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
@@ -113,7 +113,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     # TODO: Implement function, no reshape
     logits = nn_last_layer
     cross_entropy_loss = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(
+        tf.nn.softmax_cross_entropy_with_logits_v2(
             logits=logits, labels=correct_label))
 
     # regularization error
@@ -125,7 +125,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     return logits, train_op, cross_entropy_loss
 
 
-# tests.test_optimize(optimize)
+tests.test_optimize(optimize)
 
 
 def train_nn(sess, epochs, batch_size, get_batches_fn,
@@ -157,7 +157,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn,
             print("loss: {}".format(loss))
 
 
-# tests.test_train_nn(train_nn)
+tests.test_train_nn(train_nn)
 
 
 def run():
@@ -175,6 +175,10 @@ def run():
     # You'll need a GPU with at least 10 teraFLOPS to train on.
     #  https://www.cityscapes-dataset.com/
 
+    # parameters
+    epochs = 10
+    batch_size = 28
+
     with tf.Session() as sess:
         # Path to vgg model
         vgg_path = os.path.join(data_dir, 'vgg')
@@ -186,13 +190,33 @@ def run():
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
         # TODO: Build NN using load_vgg, layers, and optimize function
+        # the first two tensor is not useful for network construction
+        image_input, keep_prob, layer3_out, layer4_out, layer7_out =\
+            load_vgg(sess, vgg_path)
+        fc8_output = layers(layer3_out, layer4_out,
+                            layer7_out, num_classes)
+
+        # build placeholders
+        # input_image = tf.placeholder(tf.float32, name='input_image')
+        correct_label = tf.placeholder(tf.float32, name='correct_label')
+        # keep_prob = tf.placeholder(tf.float32, name='keep_prob')
+        learning_rate = tf.placeholder(tf.float32, name='learning_rate')
+
+        logits, train_op, cross_entropy_loss =\
+            optimize(fc8_output, correct_label, learning_rate, num_classes)
 
         # TODO: Train NN using the train_nn function
+        sess.run(tf.global_variables_initializer())
+        train_nn(sess, epochs, batch_size, get_batches_fn,
+                 train_op, cross_entropy_loss, image_input,
+                 correct_label, keep_prob, learning_rate)
 
         # TODO: Save inference data using helper.save_inference_samples
         #  helper.save_inference_samples(runs_dir, data_dir, sess,
         #       image_shape, logits, keep_prob, input_image)
-
+        helper.save_inference_samples(
+            runs_dir, data_dir, sess,
+            image_shape, logits, keep_prob, image_input)
         # OPTIONAL: Apply the trained model to a video
 
 
