@@ -67,25 +67,30 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
     # TODO: Implement function
     # already do 1x1 conv
-    layer7x2 = tf.layers.conv2d_transpose(vgg_layer7_out, num_classes,
-                                          4, strides=(2, 2))
+    layer7x2 = tf.layers.conv2d_transpose(
+        vgg_layer7_out, num_classes, 4, strides=(2, 2), padding='same',
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3))
 
     # scale layer4
     scaled_layer4 = tf.multiply(vgg_layer4_out, 0.01, name='layer4_out_scaled')
-    score_layer4 = tf.layers.conv2d(scaled_layer4, num_classes,
-                                    1, strides=(1, 1))
+    score_layer4 = tf.layers.conv2d(
+        scaled_layer4, num_classes, 1, strides=(1, 1), padding='same',
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3))
     fuse_layer4 = tf.add(layer7x2, score_layer4)
-    layer4x2 = tf.layers.conv2d_transpose(fuse_layer4, num_classes,
-                                          4, strides=(2, 2))
+    layer4x2 = tf.layers.conv2d_transpose(
+        fuse_layer4, num_classes, 4, strides=(2, 2), padding='same',
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3))
 
     # scale layer3
     scaled_layer3 = tf.multiply(vgg_layer3_out, 0.0001,
                                 name='layer3_out_scaled')
-    score_layer3 = tf.layers.conv2d(scaled_layer3, num_classes,
-                                    1, strides=(1, 1))
+    score_layer3 = tf.layers.conv2d(
+        scaled_layer3, num_classes, 1, strides=(1, 1), padding='same',
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3))
     fuse_layer3 = tf.add(layer4x2, score_layer3)
-    layer3x2 = tf.layers.conv2d_transpose(fuse_layer3, num_classes,
-                                          4, strides=(2, 2))
+    layer3x2 = tf.layers.conv2d_transpose(
+        fuse_layer3, num_classes, 4, strides=(2, 2), padding='same',
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3))
 
     return layer3x2
 
