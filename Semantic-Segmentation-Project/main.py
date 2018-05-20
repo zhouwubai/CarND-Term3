@@ -67,8 +67,11 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
     # TODO: Implement function
     # already do 1x1 conv
+    score_layer7 = tf.layers.conv2d(
+        vgg_layer7_out, num_classes, 1, strides=(1, 1), padding='same',
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3))
     layer7x2 = tf.layers.conv2d_transpose(
-        vgg_layer7_out, num_classes, 4, strides=(2, 2), padding='same',
+        score_layer7, num_classes, 4, strides=(2, 2), padding='same',
         kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3))
 
     # scale layer4
@@ -107,8 +110,14 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     :param num_classes: Number of classes to classify
     :return: Tuple of (logits, train_op, cross_entropy_loss)
     """
-    # TODO: Implement function
-    return None, None, None
+    # TODO: Implement function, no reshape
+    logits = nn_last_layer
+    cross_entropy_loss = tf.reduce_mean(
+        tf.nn.softmax_cross_entropy_with_logits(
+            logits=logits, labels=correct_label))
+    train_op =\
+        tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy_loss)
+    return logits, train_op, cross_entropy_loss
 
 
 # tests.test_optimize(optimize)
