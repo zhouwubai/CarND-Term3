@@ -34,8 +34,11 @@ def load_vgg(sess, vgg_path):
     vgg_tag = 'vgg16'
     vgg_input_tensor_name = 'image_input:0'
     vgg_keep_prob_tensor_name = 'keep_prob:0'
+    # 56 * 56 * 256 -> 28 * 28 * 256
     vgg_layer3_out_tensor_name = 'layer3_out:0'
+    # 28 * 28 * 512 -> 14 * 14 * 512
     vgg_layer4_out_tensor_name = 'layer4_out:0'
+    # 7 * 7 * 4096
     vgg_layer7_out_tensor_name = 'layer7_out:0'
 
     tf.saved_model.loader.load(sess, [vgg_tag], vgg_path)
@@ -63,7 +66,28 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :return: The Tensor for the last layer of output
     """
     # TODO: Implement function
-    return None
+    # already do 1x1 conv
+    layer7x2 = tf.layers.conv2d_transpose(vgg_layer7_out, num_classes,
+                                          4, strides=(2, 2))
+
+    # scale layer4
+    scaled_layer4 = tf.multiply(vgg_layer4_out, 0.01, name='layer4_out_scaled')
+    score_layer4 = tf.layers.conv2d(scaled_layer4, num_classes,
+                                    1, strides=(1, 1))
+    fuse_layer4 = tf.add(layer7x2, score_layer4)
+    layer4x2 = tf.layers.conv2d_transpose(fuse_layer4, num_classes,
+                                          4, strides=(2, 2))
+
+    # scale layer3
+    scaled_layer3 = tf.multiply(vgg_layer3_out, 0.0001,
+                                name='layer3_out_scaled')
+    score_layer3 = tf.layers.conv2d(scaled_layer3, num_classes,
+                                    1, strides=(1, 1))
+    fuse_layer3 = tf.add(layer4x2, score_layer3)
+    layer3x2 = tf.layers.conv2d_transpose(fuse_layer3, num_classes,
+                                          4, strides=(2, 2))
+
+    return layer3x2
 
 
 # tests.test_layers(layers)
