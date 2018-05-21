@@ -27,8 +27,8 @@ python main.py
 
 ### Labeling Samples
 
-<img src="./images/um_0000002.png" alt="Drawing"/>
+<img src="./images/um_000002.png" alt="Drawing"/>
 
-<img src="./images/um_0000024.png" alt="Drawing"/>
+<img src="./images/um_000024.png" alt="Drawing"/>
 
-<img src="./images/um_0000020.png" alt="Drawing"/>
+<img src="./images/um_000020.png" alt="Drawing"/>
