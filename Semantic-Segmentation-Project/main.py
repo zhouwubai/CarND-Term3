@@ -66,6 +66,11 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :return: The Tensor for the last layer of output
     """
     # TODO: Implement function
+    # freeze pre-trained model
+    vgg_layer7_out = tf.stop_gradient(vgg_layer7_out)
+    vgg_layer4_out = tf.stop_gradient(vgg_layer4_out)
+    vgg_layer3_out = tf.stop_gradient(vgg_layer3_out)
+
     # already do 1x1 conv
     score_layer7 = tf.layers.conv2d(
         vgg_layer7_out, num_classes, 1, strides=(1, 1), padding='same',
@@ -153,7 +158,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn,
                 feed_dict={input_image: images,
                            correct_label: labels,
                            keep_prob: 0.5,
-                           learning_rate: 0.01})
+                           learning_rate: 0.005})
             print("loss: {}".format(loss))
 
 
@@ -176,8 +181,8 @@ def run():
     #  https://www.cityscapes-dataset.com/
 
     # parameters
-    epochs = 10
-    batch_size = 28
+    epochs = 1
+    batch_size = 32
 
     with tf.Session() as sess:
         # Path to vgg model
