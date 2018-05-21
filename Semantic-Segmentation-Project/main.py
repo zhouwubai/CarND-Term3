@@ -72,33 +72,28 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     vgg_layer3_out = tf.stop_gradient(vgg_layer3_out)
 
     # already do 1x1 conv
+    # kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3)
     score_layer7 = tf.layers.conv2d(
-        vgg_layer7_out, num_classes, 1, strides=(1, 1), padding='same',
-        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3))
+        vgg_layer7_out, num_classes, 1, strides=(1, 1), padding='same')
     layer7x2 = tf.layers.conv2d_transpose(
-        score_layer7, num_classes, 4, strides=(2, 2), padding='same',
-        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3))
+        score_layer7, num_classes, 4, strides=(2, 2), padding='same')
 
     # scale layer4
     scaled_layer4 = tf.multiply(vgg_layer4_out, 0.01, name='layer4_out_scaled')
     score_layer4 = tf.layers.conv2d(
-        scaled_layer4, num_classes, 1, strides=(1, 1), padding='same',
-        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3))
+        scaled_layer4, num_classes, 1, strides=(1, 1), padding='same')
     fuse_layer4 = tf.add(layer7x2, score_layer4)
     layer4x2 = tf.layers.conv2d_transpose(
-        fuse_layer4, num_classes, 4, strides=(2, 2), padding='same',
-        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3))
+        fuse_layer4, num_classes, 4, strides=(2, 2), padding='same')
 
     # scale layer3
     scaled_layer3 = tf.multiply(vgg_layer3_out, 0.0001,
                                 name='layer3_out_scaled')
     score_layer3 = tf.layers.conv2d(
-        scaled_layer3, num_classes, 1, strides=(1, 1), padding='same',
-        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3))
+        scaled_layer3, num_classes, 1, strides=(1, 1), padding='same')
     fuse_layer3 = tf.add(layer4x2, score_layer3)
     layer3x8 = tf.layers.conv2d_transpose(
-        fuse_layer3, num_classes, 16, strides=(8, 8), padding='same',
-        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=1e-3))
+        fuse_layer3, num_classes, 16, strides=(8, 8), padding='same')
 
     return layer3x8
 
@@ -122,8 +117,8 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
             logits=logits, labels=correct_label))
 
     # regularization error
-    reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-    cross_entropy_loss = cross_entropy_loss + 0 * sum(reg_losses)
+    # reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+    cross_entropy_loss = cross_entropy_loss  # + 1e-3 * sum(reg_losses)
 
     train_op =\
         tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy_loss)
@@ -153,7 +148,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn,
     # TODO: Implement function
     lr = 0.005
     for i in range(epochs):
-        decay_lr = lr * 0.8 ** (i / 2.0)
+        decay_lr = lr * 0.8 ** (i / 1.0)
         print("epoch {}: lr: {}".format(i, decay_lr))
         for images, labels in get_batches_fn(batch_size):
             # print("{}:{}".format(images.shape, labels.shape))
