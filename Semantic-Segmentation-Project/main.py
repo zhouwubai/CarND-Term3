@@ -123,7 +123,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
 
     # regularization error
     reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-    cross_entropy_loss = cross_entropy_loss + sum(reg_losses)
+    cross_entropy_loss = cross_entropy_loss + 0 * sum(reg_losses)
 
     train_op =\
         tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy_loss)
@@ -151,14 +151,18 @@ def train_nn(sess, epochs, batch_size, get_batches_fn,
     :param learning_rate: TF Placeholder for learning rate
     """
     # TODO: Implement function
+    lr = 0.005
     for i in range(epochs):
+        decay_lr = lr * 0.8 ** (i / 2.0)
+        print("epoch {}: lr: {}".format(i, decay_lr))
         for images, labels in get_batches_fn(batch_size):
+            # print("{}:{}".format(images.shape, labels.shape))
             _, loss = sess.run(
                 [train_op, cross_entropy_loss],
                 feed_dict={input_image: images,
                            correct_label: labels,
                            keep_prob: 0.5,
-                           learning_rate: 0.005})
+                           learning_rate: lr})
             print("loss: {}".format(loss))
 
 
@@ -181,8 +185,10 @@ def run():
     #  https://www.cityscapes-dataset.com/
 
     # parameters
-    epochs = 1
+    epochs = 16
     batch_size = 32
+
+    # writer = tf.summary.FileWriter("data/log/")
 
     with tf.Session() as sess:
         # Path to vgg model
@@ -209,6 +215,10 @@ def run():
 
         logits, train_op, cross_entropy_loss =\
             optimize(fc8_output, correct_label, learning_rate, num_classes)
+
+        # graph = tf.get_default_graph()
+        # print("saving graph")
+        # writer.add_graph(graph)
 
         # TODO: Train NN using the train_nn function
         sess.run(tf.global_variables_initializer())

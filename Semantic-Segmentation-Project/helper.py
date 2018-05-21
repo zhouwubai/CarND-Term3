@@ -10,6 +10,7 @@ import tensorflow as tf
 from glob import glob
 from urllib.request import urlretrieve
 from tqdm import tqdm
+import pdb
 
 
 class DLProgress(tqdm):
@@ -101,6 +102,7 @@ def gen_batch_function(data_folder, image_shape):
     return get_batches_fn
 
 
+# prev_segmentation = None
 def gen_test_output(sess, logits, keep_prob, image_pl,
                     data_folder, image_shape):
     """
@@ -113,6 +115,7 @@ def gen_test_output(sess, logits, keep_prob, image_pl,
     :param image_shape: Tuple - Shape of image
     :return: Output for for each test image
     """
+    # global prev_segmentation
     for image_file in glob(os.path.join(data_folder, 'image_2', '*.png')):
         image = scipy.misc.imresize(scipy.misc.imread(image_file), image_shape)
 
@@ -125,6 +128,13 @@ def gen_test_output(sess, logits, keep_prob, image_pl,
         im_softmax = im_softmax[0][:, :, 1]  # single image, last dimension
         segmentation = (im_softmax > 0.5).reshape(image_shape[0],
                                                   image_shape[1], 1)
+        '''
+        tmp_seg = segmentation[:, :, 0]
+        if prev_segmentation is not None:
+            diff = np.logical_xor(tmp_seg, prev_segmentation)
+            print(np.sum(diff))
+        prev_segmentation = tmp_seg
+        '''
         mask = np.dot(segmentation, np.array([[0, 255, 0, 127]]))
         mask = scipy.misc.toimage(mask, mode="RGBA")
         street_im = scipy.misc.toimage(image)
