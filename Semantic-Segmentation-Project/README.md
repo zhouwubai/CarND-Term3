@@ -31,4 +31,4 @@ python main.py
 
 <img src="./images/um_000024.png" alt="Drawing"/>
 
-<img src="./images/um_000020.png" alt="Drawing"/>
+<img src="./images/uu_000020.png" alt="Drawing"/>
