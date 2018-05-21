@@ -32,3 +32,8 @@ python main.py
 <img src="./images/um_000024.png" alt="Drawing"/>
 
 <img src="./images/uu_000020.png" alt="Drawing"/>
+
+
+### Model Structure Visualization
+
+<img src="./images/fcn.png" alt="Drawing"/>
